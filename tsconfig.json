@@ -9,7 +9,12 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "noUnusedLocals": false,
-    "noUnusedParameters": false
+        "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
 }
