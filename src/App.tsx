@@ -10,7 +10,7 @@ import { Gavel, Plus, Clock } from 'lucide-react';
 export default function AuctionPlatform() {
   const [allAuctions, setAllAuctions] = useState<Array<{
     id: number;
-    title: string;
+    title: string; 
     currentBid: number;
     endTime: string;
     seller: string;
