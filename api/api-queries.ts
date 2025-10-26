@@ -18,6 +18,7 @@ export enum WhereParamTypes {
 	STRING,
 	NUMBER,
 	BOOLEAN,
+	DATE
 }
 
 export type WhereParam = {
@@ -71,8 +72,9 @@ export const parseWhereStatement = (query: Record<string, any>, acceptedParams: 
 		if (whereParam.type === WhereParamTypes.STRING) {
 			params[key] = value;
 		}
+
 		if (whereParam.type === WhereParamTypes.NUMBER) {
-			const number = Number(value);
+			const number = parseInt(value);
 			if (isNaN(number)) throw new Error(`Invalid number for ${key}`);
 
 			params[key] = number;

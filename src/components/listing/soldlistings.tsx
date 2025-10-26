@@ -3,10 +3,11 @@
 
 import { useInfiniteQuery } from "@tanstack/react-query";
 //import { CONSTANTS, QueryKey } from "@/constants";
-import { Listing } from "./listing";
 import { constructUrlSearchParams, getNextPageParam } from "../helpers.tsx";
 import { type ListingType } from "../../AuctionPlatform"
 import { useState } from "react";
+import Countdown from "react-countdown";
+import { useCurrentAccount } from "@mysten/dapp-kit";
 
 export type ListingQuery = {
   listingId?: string;
@@ -17,12 +18,8 @@ export type ListingQuery = {
   limit?: string;
 };
 
-type ListingListParams = {
-  // any other props here
-  params: ListingQuery;
-  enableSearch: boolean;
-  setBidOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setCurrentListing: React.Dispatch<React.SetStateAction<ListingType>>;
+function formatSui(value: number): string {
+  return `${value.toFixed(2)} SUI`;
 }
 
 /**
@@ -30,12 +27,13 @@ type ListingListParams = {
  * It works by using the API to fetch them, and can be re-used with different
  * API params, as well as an optional search by escrow ID functionality.
  */
-export function ListingList({
-  params,
-  enableSearch,
-  setBidOpen,
-  setCurrentListing
-}: ListingListParams) {
+
+type ListingProps = {
+    params: ListingQuery
+}
+
+export function CurrentListings({ params }: ListingProps) {
+  const account = useCurrentAccount();
   const [listingId, setListingId] = useState("");
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
@@ -59,19 +57,35 @@ export function ListingList({
     });
 
   return (
-    <section aria-label="Browse listings">
-        <div className="listing-grid">
-            {data?.map((listing: ListingType) => (
-              <Listing 
-                  listing={listing}
-                  setBidOpen={setBidOpen}
-                  setCurrentListing={setCurrentListing}
-              />
+    <div className="activity-card">
+        <header>
+        <h2>Things you are selling</h2>
+        <p>Review listings that are currently live in the marketplace.</p>
+        </header>
+        {account != null && (data != null && data?.length > 0) ? (
+        <ul className="activity-list">
+            {data?.map((listing) => (
+            <li key={listing.id}>
+                <div className="activity-primary">
+                <span className="activity-title">{listing.name}</span>
+                <span className="activity-status status-muted">
+                    {<Countdown daysInHours={true} date={listing.endTime} />}
+                </span>
+                </div>
+                <div className="activity-secondary">
+                <span>
+                    Minimum <strong>{formatSui(listing.minBid)}</strong>
+                </span>
+                <span>
+                    Highest bid {listing.highestBid ? formatSui(listing.highestBid) : "No bids yet"}
+                </span>
+                </div>
+            </li>
             ))}
-        </div>
-        {data?.length === 0 && (
-            <p className="empty-state">Nothing matched your search. Try another keyword.</p>
+        </ul>
+        ) : (
+        <p className="empty-state">You have not listed anything for auction yet.</p>
         )}
-    </section>
+    </div>
   );
 }

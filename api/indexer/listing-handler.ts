@@ -1,8 +1,8 @@
 import { SuiEvent } from '@mysten/sui/client';
-import { type ListingCreateInput } from '@prisma/client/index.ts';
 import axios from 'axios';
 
 import { prisma } from '../db';
+import { Prisma } from '@prisma/client';
 
 type ListingEvent = ListingCreated | ListingEnded | ListingCancelled;
 
@@ -20,7 +20,7 @@ type ListingCancelled = {
 };
 
 export const handleListingObjects = async (events: SuiEvent[], type: string) => {
-    const updates: Record<string, ListingCreateInput> = {};
+    const updates: Record<string, Prisma.ListingCreateInput> = {};
 
     for (const event of events) {
         if (!event.type.startsWith(type)) throw new Error('Invalid event module origin');
@@ -67,7 +67,7 @@ export const handleListingObjects = async (events: SuiEvent[], type: string) => 
             expiry: number
         } = {
             ...rawObject,
-            bids: rawObject.bids.map(bid => parseInt(bid)),
+            bids: rawObject.bids.map((bid: string) => parseInt(bid)),
             stored: parseInt(rawObject.stored),
             maxbid: parseInt(rawObject.maxbid),
             minbid: parseInt(rawObject.minbid),

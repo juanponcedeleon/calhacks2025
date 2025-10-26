@@ -1,7 +1,7 @@
 module listing_sui::listing;
 
 use listing_sui::bid::{createBid, Bid};
-use std::string::{Self, String};
+use std::string::{String};
 use sui::clock::{Self, Clock};
 use sui::coin::{Self, Coin};
 use sui::balance::{Self, Balance};
@@ -24,6 +24,10 @@ public struct ListingEnded has copy, drop {
 
 public struct ListingCancelled has copy, drop {
 	listing_id: ID
+}
+
+public struct BidCreated has copy, drop {
+    listing_id: ID
 }
 
 public struct Listing has key {
@@ -51,7 +55,6 @@ public struct Storage has key {
 
 public fun create(
     stored: u64,
-    owner: address,
     minbid: u64,
     expiry: u64,
     name: String,
@@ -100,6 +103,10 @@ public fun recievebid(
 
     let balance = coin::into_balance(bid);
     balance::join(&mut listing.collectedbids, balance);
+
+    event::emit(BidCreated {
+        listing_id: object::id(listing)
+    });
 
     createBid(ctx.sender(),object::id(listing), bid_amount, ctx, listing.name, listing.expiry, listing.minbid)
 }
