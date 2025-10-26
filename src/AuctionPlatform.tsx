@@ -1,6 +1,7 @@
 ﻿import { useMemo, useRef, useState } from "react";
 import "./AuctionPlatform.css";
 import { useAuth } from "@/MockAuth";
+import { ConnectButton } from "@mysten/dapp-kit";
 import { BidSender } from "./BidSender";
 
 export type Listing = {
@@ -136,7 +137,7 @@ function freshListingDraft(): ListingDraft {
 
 
 export default function AuctionPlatform() {
-  const { profile, logout } = useAuth();
+  const { profile } = useAuth();
   
   const [tab, setTab] = useState<"browse" | "activity">("browse");
   const [query, setQuery] = useState("");
@@ -245,15 +246,7 @@ export default function AuctionPlatform() {
               <span className="auction-user__label">Signed in</span>
               <span className="auction-user__name">{profile?.name ?? "Guest"}</span>
             </div>
-            <button
-              className="auction-signout"
-              onClick={() => {
-                logout();
-                window.location.replace("/");
-              }}
-            >
-              Sign out
-            </button>
+            <ConnectButton connectText="Connect wallet" className="auction-wallet" />
           </div>
         </div>
       </header>
