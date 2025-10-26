@@ -4,7 +4,10 @@ import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import { BidSender } from "./BidSender";
 import { type ListingQuery, ListingList } from "./components/listing/ListingList";
 ﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { AddListing } from "./components/listing/addlisting";
+import { ShowBids } from "./components/bids/showbids"
 import "./AuctionPlatform.css";
+import { CurrentListings } from "./components/listing/soldlistings";
 import Countdown from "react-countdown";
 
 export type ListingType = {
@@ -13,7 +16,7 @@ export type ListingType = {
   description: string;
   minBid: number;
   currentBid: number;
-  endTime: Date;
+  expiry: Date;
 };
 
 type ActivityBid = {
@@ -33,13 +36,6 @@ type PortfolioEntry = {
   endsAt: Date;
 };
 
-type ListingDraft = {
-  name: string;
-  description: string;
-  minBid: string;
-  durationHours: string;
-};
-
 function hoursFromNow(hours: number): Date {
   const next = new Date();
   next.setHours(next.getHours() + hours);
@@ -53,7 +49,7 @@ const initialListings: ListingType[] = [
     description: "Hand blown lavender glass with etched chrome accents.",
     minBid: 1.25,
     currentBid: 1.4,
-    endTime: hoursFromNow(4),
+    expiry: hoursFromNow(4),
   },
   {
     id: "silk-02",
@@ -61,7 +57,7 @@ const initialListings: ListingType[] = [
     description: "Limited run screen print on archival lavender silk.",
     minBid: 0.9,
     currentBid: 1.05,
-    endTime: hoursFromNow(7),
+    expiry: hoursFromNow(7),
   },
   {
     id: "vinyl-03",
@@ -69,7 +65,7 @@ const initialListings: ListingType[] = [
     description: "Four track ambient vinyl release signed by the artist.",
     minBid: 0.7,
     currentBid: 0.82,
-    endTime: hoursFromNow(2),
+    expiry: hoursFromNow(2),
   },
   {
     id: "chair-04",
@@ -77,7 +73,7 @@ const initialListings: ListingType[] = [
     description: "Ash frame with plum boucle upholstery and matte hardware.",
     minBid: 2.5,
     currentBid: 2.85,
-    endTime: hoursFromNow(12),
+    expiry: hoursFromNow(12),
   },
 ];
 
@@ -87,7 +83,7 @@ const initialBids: ActivityBid[] = [
     name: "Orchid Glass Sculpture",
     bidAmount: 1.4,
     status: "leading",
-    endsAt: initialListings[0].endTime,
+    endsAt: initialListings[0].expiry,
     minBid: initialListings[0].minBid,
   },
   {
@@ -95,7 +91,7 @@ const initialBids: ActivityBid[] = [
     name: "Midnight Vinyl Set",
     bidAmount: 0.8,
     status: "outbid",
-    endsAt: initialListings[2].endTime,
+    endsAt: initialListings[2].expiry,
     minBid: initialListings[2].minBid,
   },
 ];
@@ -123,15 +119,9 @@ const statusCopy: Record<ActivityBid["status"], string> = {
   pending: "Pending",
 };
 
-function freshListingDraft(): ListingDraft {
-  return {
-    name: "",
-    description: "",
-    minBid: "0.50",
-    durationHours: "6",
-  };
-}
-
+type BidQuery = {
+  bidId?: string;
+};
 
 
 export default function AuctionPlatform() {
@@ -147,17 +137,15 @@ export default function AuctionPlatform() {
   const [activity, setActivity] = useState<ActivityBid[]>(() => initialBids);
   const [portfolio, setPortfolio] = useState<PortfolioEntry[]>(() => initialPortfolio);
   const [isListingModalOpen, setListingModalOpen] = useState(false);
-  const [listingDraft, setListingDraft] = useState<ListingDraft>(freshListingDraft);
   const account = useCurrentAccount();
 
   const openListingModal = () => {
-    setListingDraft(freshListingDraft());
+    // setListingDraft(freshListingDraft());
     setListingModalOpen(true);
   };
   
   const closeListingModal = () => {
     setListingModalOpen(false);
-    setListingDraft(freshListingDraft());
   };
   
   const filteredListings = useMemo(() => {
@@ -173,61 +161,13 @@ export default function AuctionPlatform() {
     });
   }, [listings, query]);
   
-  const handleCreateListing = () => {
-    const name = listingDraft.name.trim();
-    const description = listingDraft.description.trim();
-    const minBidValue = parseFloat(listingDraft.minBid);
-    const durationValue = parseInt(listingDraft.durationHours, 10);
-    
-    if (!name || !description) {
-      alert("Please provide a name and description.");
-      return;
-    }
-    
-    if (Number.isNaN(minBidValue) || minBidValue <= 0) {
-      alert("Minimum bid must be greater than 0.");
-      return;
-    }
-    
-    if (Number.isNaN(durationValue) || durationValue <= 0) {
-      alert("Duration should be at least one hour.");
-      return;
-    }
-    
-    const id = `listing-${Date.now()}`;
-    const endTime = hoursFromNow(durationValue);
-    const seller = profile?.name ?? "You";
-
-    const newListing: ListingType = {
-      id,
-      name,
-      description,
-      minBid: minBidValue,
-      currentBid: minBidValue,
-      endTime,
-    };
-
-    const newPortfolio: PortfolioEntry = {
-      id,
-      name,
-      minBid: minBidValue,
-      highestBid: null,
-      endsAt: endTime,
-    };
-    
-    setListings((prev) => [newListing, ...prev]);
-    setPortfolio((prev) => [newPortfolio, ...prev]);
-    setQuery("");
-    closeListingModal();
-  };
-  
   const defaultListing : ListingType = {
     id: "",
     name: "",
     description: "",
     minBid: 0,
     currentBid: 0,
-    endTime: new Date,
+    expiry: new Date,
   }
 
   const defaultListingQuery : ListingQuery = {
@@ -237,6 +177,19 @@ export default function AuctionPlatform() {
     cancelled: '',
     swapped: '',
     limit: ''
+  };
+
+  const paramQuery : ListingQuery = {
+    listingId: "",
+    sender: account?.address,
+    recipient: "",
+    cancelled: '',
+    swapped: '',
+    limit: ''
+  };
+
+  const defaultBidQuery : BidQuery = {
+    bidId: ""
   };
 
   const [bidOpen, setBidOpen] = useState(false); 
@@ -310,69 +263,13 @@ export default function AuctionPlatform() {
           <ListingList
             params={defaultListingQuery}
             enableSearch={false}
+            setBidOpen={setBidOpen}
+            setCurrentListing={setCurrentListing}
           />
         ) : (
           <section className="activity-layout" aria-label="Your activity">
-            <div className="activity-card">
-              <header>
-                <h2>Things you have bid on</h2>
-                <p>Track how your offers are performing across live auctions.</p>
-              </header>
-              {activity.length > 0 ? (
-                <ul className="activity-list">
-                  {activity.map((bid) => (
-                    <li key={bid.id}>
-                      <div className="activity-primary">
-                        <span className="activity-title">{bid.name}</span>
-                        <span className={`activity-status status-${bid.status}`}>
-                          {statusCopy[bid.status]}
-                        </span>
-                      </div>
-                      <div className="activity-secondary">
-                        <span>
-                          Your bid <strong>{formatSui(bid.bidAmount)}</strong>
-                        </span>
-                        <span>Minimum {formatSui(bid.minBid)}</span>
-                        <span>Ends in {<Countdown daysInHours={true} date={bid.endsAt} />}</span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="empty-state">You have not placed any bids yet.</p>
-              )}
-            </div>
-
-            <div className="activity-card">
-              <header>
-                <h2>Things you are selling</h2>
-                <p>Review listings that are currently live in the marketplace.</p>
-              </header>
-              {portfolio.length > 0 ? (
-                <ul className="activity-list">
-                  {portfolio.map((entry) => (
-                    <li key={entry.id}>
-                      <div className="activity-primary">
-                        <span className="activity-title">{entry.name}</span>
-                        <span className="activity-status status-muted">
-                          {<Countdown daysInHours={true} date={entry.endsAt} />}
-                        </span>
-                      </div>
-                      <div className="activity-secondary">
-                        <span>
-                          Minimum <strong>{formatSui(entry.minBid)}</strong>
-                        </span>
-                        <span>
-                          Highest bid {entry.highestBid ? formatSui(entry.highestBid) : "No bids yet"}
-                        </span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="empty-state">You have not listed anything for auction yet.</p>
-              )}
-            </div>
+            <ShowBids params={defaultBidQuery} />
+            <CurrentListings params={paramQuery}/>
           </section>
         )}
       </main>
@@ -385,86 +282,13 @@ export default function AuctionPlatform() {
       </footer>
 
       {isListingModalOpen && (
-        <div className="modal-overlay" role="dialog" aria-modal="true">
-          <div className="modal-card">
-            <header className="modal-header">
-              <div>
-                <h3>Add a listing</h3>
-                <p>Share the details so other collectors can bid.</p>
-              </div>
-              <button
-                type="button"
-                className="modal-close"
-                onClick={closeListingModal}
-                aria-label="Close add listing form"
-              >
-                ×
-              </button>
-            </header>
-
-            <div className="modal-body">
-              <label className="modal-label">
-                Listing name
-                <input
-                  value={listingDraft.name}
-                  onChange={(event) =>
-                    setListingDraft((draft) => ({ ...draft, name: event.target.value }))
-                  }
-                  placeholder="Sui-native collectible"
-                />
-              </label>
-
-              <label className="modal-label">
-                Description
-                <textarea
-                  value={listingDraft.description}
-                  onChange={(event) =>
-                    setListingDraft((draft) => ({ ...draft, description: event.target.value }))
-                  }
-                  rows={4}
-                  placeholder="Tell bidders what makes this piece special."
-                />
-              </label>
-
-              <div className="modal-grid">
-                <label className="modal-label">
-                  Minimum bid (SUI)
-                  <input
-                    value={listingDraft.minBid}
-                    onChange={(event) =>
-                      setListingDraft((draft) => ({ ...draft, minBid: event.target.value }))
-                    }
-                    inputMode="decimal"
-                  />
-                </label>
-                <label className="modal-label">
-                  Duration (hours)
-                  <input
-                    value={listingDraft.durationHours}
-                    onChange={(event) =>
-                      setListingDraft((draft) => ({ ...draft, durationHours: event.target.value }))
-                    }
-                    inputMode="numeric"
-                  />
-                </label>
-              </div>
-            </div>
-
-            <footer className="modal-footer">
-              <button type="button" className="modal-secondary" onClick={closeListingModal}>
-                Cancel
-              </button>
-              <button type="button" className="modal-primary" onClick={handleCreateListing}>
-                Add listing
-              </button>
-            </footer>
-          </div>
-        </div>
+        <AddListing 
+          closeListingModal={closeListingModal}
+          setListings={setListings}
+          setPortfolio={setPortfolio}
+          setQuery={setQuery}
+        />
       )}
     </div>
   );
-}
-
-function formatSui(value: number): string {
-  return `${value.toFixed(2)} SUI`;
 }

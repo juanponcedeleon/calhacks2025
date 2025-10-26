@@ -43,6 +43,7 @@ app.get('/listings', async (req, res) => {
 	];
 
 	try {
+		// @ts-ignore
 		const locked = await prisma.listing.findMany({
 			where: parseWhereStatement(req.query, acceptedQueries)!,
 			...parsePaginationForQuery(req.query),
@@ -76,8 +77,8 @@ app.get('/bids', async (req, res) => {
 	];
 
 	try {
+		// @ts-ignore
 		const escrows = await prisma.bid.findMany({
-			// @ts-ignore
 			where: parseWhereStatement(req.query, acceptedQueries)!,
 			...parsePaginationForQuery(req.query),
 		});

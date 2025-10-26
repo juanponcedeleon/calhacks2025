@@ -4,10 +4,10 @@
 import { EventId, SuiClient, SuiEvent, SuiEventFilter, getFullnodeUrl } from '@mysten/sui/client';
 
 import { CONFIG } from '../config';
-import { prisma } from '../db.ts';
+import { prisma } from '../db';
 import { Network } from '../sui-utils'
 import { handleListingObjects } from './listing-handler';
-import { handleBidObjects } from './bid-handler.ts';
+import { handleBidObjects } from './bid-handler';
 
 export const getClient = (network: Network) => {
 	return new SuiClient({ url: getFullnodeUrl(network) });

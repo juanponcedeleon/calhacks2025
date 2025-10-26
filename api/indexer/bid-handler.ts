@@ -1,22 +1,21 @@
 import { SuiEvent } from '@mysten/sui/client';
-import { type BidCreateInput } from '@prisma/client/index.ts';
+import { Prisma } from '@prisma/client';
 import axios from 'axios';
 
 import { prisma } from '../db';
-import { Bid } from '@prisma/client';
 
 type BidEvent = {
-	bid_id: string;
+    listing_id: string;
 };
 
 export const handleBidObjects = async (events: SuiEvent[], type: string) => {
-    const updates: Record<string, BidCreateInput> = {};
+    const updates: Record<string, Prisma.BidCreateInput> = {};
 
     for (const event of events) {
         if (!event.type.startsWith(type)) throw new Error('Invalid event module origin');
         const data = event.parsedJson as BidEvent;
 
-        const listingId = data.bid_id;
+        const listingId = data.listing_id;
 
         const res = await axios.post('https://fullnode.testnet.sui.io', JSON.stringify({
             "jsonrpc": "2.0",

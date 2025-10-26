@@ -66,7 +66,6 @@ export function Listing({ listing, setBidOpen, setCurrentListing }: BidSenderPro
         <article key={listing.id} className="listing-card">
             <div className="listing-header">
                 <h2>{listing.name}</h2>
-                <span className="listing-seller">{listing.seller}</span>
                 </div>
                 <p className="listing-description">{listing.description}</p>
                 <dl className="listing-meta">
@@ -76,7 +75,7 @@ export function Listing({ listing, setBidOpen, setCurrentListing }: BidSenderPro
                 </div>
                 <div>
                     <dt>Time remaining</dt>
-                    <dd>{formatTimeRemaining(listing.endTime)}</dd>
+                    <dd>{formatTimeRemaining(listing.expiry)}</dd>
                 </div>
             </dl>
             <button type="button" className="listing-action" onClick={(e) => {

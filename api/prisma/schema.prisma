@@ -3,12 +3,12 @@
   }
 
   datasource db {
-    provider = "mongodb"
-    url      = env("DATABASE_URL")
+    provider = "sqlite"
+    url      = "file:./dev.db"
   }
 
   model Listing {
-    id           String   @id @default(auto()) @map("_id") @db.ObjectId
+    id           String   @id 
     name         String
     description  String
     endTime      Float
@@ -16,7 +16,7 @@
   }
 
   model Bid {
-    id           String   @id @default(auto()) @map("_id") @db.ObjectId
+    id           String   @id 
     name         String
     bid          Float
     endTime      Float
@@ -24,7 +24,7 @@
   }
 
   model Cursor {
-    id           String   @id @default(auto()) @map("_id") @db.ObjectId
+    id           String   @id 
     eventSeq     String
     txDigest     String
   }
