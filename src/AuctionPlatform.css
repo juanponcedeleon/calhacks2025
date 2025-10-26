@@ -1,4 +1,8 @@
-﻿.auction-shell {
+﻿body {
+  margin: 0;
+}
+
+.auction-shell {
   min-height: 100vh;
   background-color: #f5f1ff;
   color: #23183f;
