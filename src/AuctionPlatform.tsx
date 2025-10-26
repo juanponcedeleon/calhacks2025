@@ -1,7 +1,7 @@
 ﻿import { useMemo, useState } from "react";
 import "./AuctionPlatform.css";
 import { useAuth } from "@/MockAuth";
-import { useCurrentAccount, ConnectButton } from "@mysten/dapp-kit";
+import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 
 type Listing = {
   id: string;
@@ -134,18 +134,16 @@ function freshListingDraft(): ListingDraft {
 }
 
 export default function AuctionPlatform() {
-  const { profile, logout } = useAuth();
+  const { profile } = useAuth();
 
   const [tab, setTab] = useState<"browse" | "activity">("browse");
   const [query, setQuery] = useState("");
-<<<<<<< HEAD
-  const account = useCurrentAccount();
-=======
   const [listings, setListings] = useState<Listing[]>(() => initialListings);
   const [activity, setActivity] = useState<ActivityBid[]>(() => initialBids);
   const [portfolio, setPortfolio] = useState<PortfolioEntry[]>(() => initialPortfolio);
   const [isListingModalOpen, setListingModalOpen] = useState(false);
   const [listingDraft, setListingDraft] = useState<ListingDraft>(freshListingDraft);
+  const account = useCurrentAccount();
 
   const openListingModal = () => {
     setListingDraft(freshListingDraft());
@@ -156,7 +154,6 @@ export default function AuctionPlatform() {
     setListingModalOpen(false);
     setListingDraft(freshListingDraft());
   };
->>>>>>> 715be2080fd809f9080481c4d44a037cc64787c0
 
   const filteredListings = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -234,7 +231,7 @@ export default function AuctionPlatform() {
               <span className="auction-user__label">Signed in</span>
               <span className="auction-user__name">{profile?.name ?? "Guest"}</span>
             </div>
-            <ConnectButton />
+            <ConnectButton className="auction-signout"/>
           </div>
         </div>
       </header>
