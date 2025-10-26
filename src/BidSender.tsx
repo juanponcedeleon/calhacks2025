@@ -22,6 +22,9 @@ export const BidSender = forwardRef<HTMLDivElement, BidSenderProps>((props, ref)
             console.log("tell the user to not make it lower")
             return
         }
+
+        // once you have validated everything close it
+        props.setOpen(false);
     }
     return <div className="modal-overlay" role="dialog" aria-modal="true" style={{visibility: props.open ? "visible" : "hidden"}}>
           <div className="modal-card">
