@@ -1,0 +1,7 @@
+[package]
+name = "listing"
+version = "0.0.1"
+edition = "2024.beta"
+
+[addresses]
+listing_sui = "0x0"

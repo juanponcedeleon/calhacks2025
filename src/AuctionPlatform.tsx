@@ -1,3 +1,8 @@
+﻿import { useMemo, useRef, useState } from "react";
+import "./AuctionPlatform.css";
+import { useAuth } from "@/MockAuth";
+import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
+import { BidSender } from "./BidSender";
 ﻿import { useEffect, useMemo, useRef, useState } from "react";
 import "./AuctionPlatform.css";
 import { useAuth } from "@/MockAuth";
@@ -146,6 +151,7 @@ export default function AuctionPlatform() {
   const [portfolio, setPortfolio] = useState<PortfolioEntry[]>(() => initialPortfolio);
   const [isListingModalOpen, setListingModalOpen] = useState(false);
   const [listingDraft, setListingDraft] = useState<ListingDraft>(freshListingDraft);
+  const account = useCurrentAccount();
 
   const openListingModal = () => {
     setListingDraft(freshListingDraft());

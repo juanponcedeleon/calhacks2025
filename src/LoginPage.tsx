@@ -1,5 +1,7 @@
 ﻿import "./LoginPage.css";
 import { useAuth } from "@/MockAuth";
+import { ConnectButton } from "@mysten/dapp-kit";
+
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -18,7 +20,12 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <button
+        <ConnectButton onClick={() => {
+          login({ name: "Demo Bidder" });
+          window.location.replace("/app");
+        }}/>
+
+        {/* <button
           className="login-google"
           onClick={() => {
             login({ name: "Demo Bidder" });
@@ -32,7 +39,7 @@ export default function LoginPage() {
             <span className="google-dot dot-green" />
           </span>
           Continue with Google
-        </button>
+        </button> */}
 
         <p className="login-hint">
           A single tap unlocks your activity feed and the items you are listing.
