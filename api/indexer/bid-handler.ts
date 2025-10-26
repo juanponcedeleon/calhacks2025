@@ -58,7 +58,7 @@ export const handleBidObjects = async (events: SuiEvent[], type: string) => {
             minBid: parseInt(rawObject.minBid)
         };
 
-        await prisma.listing.upsert({
+        await prisma.bid.upsert({
             where: {
                 id: listingObject.id
             },

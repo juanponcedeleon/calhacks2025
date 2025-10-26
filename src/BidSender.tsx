@@ -1,16 +1,13 @@
 import React, { useState } from "react";
 import { forwardRef } from "react";
-import { type Listing } from "./AuctionPlatform";
+import { type ListingType } from "./AuctionPlatform";
 
 interface BidSenderProps {
   // any other props here
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  listing: Listing;
+  listing: ListingType;
 }
-
-
-
 
 export const BidSender = forwardRef<HTMLDivElement, BidSenderProps>((props, ref) => {
     const [bidAmount, setBidAmount] = useState(String(props.listing.minBid));
