@@ -1,8 +1,9 @@
-﻿import { useMemo, useState } from "react";
+﻿import { useMemo, useRef, useState } from "react";
 import "./AuctionPlatform.css";
 import { useAuth } from "@/MockAuth";
+import { BidSender } from "./BidSender";
 
-type Listing = {
+export type Listing = {
   id: string;
   name: string;
   description: string;
@@ -132,9 +133,11 @@ function freshListingDraft(): ListingDraft {
   };
 }
 
+
+
 export default function AuctionPlatform() {
   const { profile, logout } = useAuth();
-
+  
   const [tab, setTab] = useState<"browse" | "activity">("browse");
   const [query, setQuery] = useState("");
   const [listings, setListings] = useState<Listing[]>(() => initialListings);
@@ -147,12 +150,12 @@ export default function AuctionPlatform() {
     setListingDraft(freshListingDraft());
     setListingModalOpen(true);
   };
-
+  
   const closeListingModal = () => {
     setListingModalOpen(false);
     setListingDraft(freshListingDraft());
   };
-
+  
   const filteredListings = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     if (!normalized) {
@@ -166,28 +169,28 @@ export default function AuctionPlatform() {
       );
     });
   }, [listings, query]);
-
+  
   const handleCreateListing = () => {
     const name = listingDraft.name.trim();
     const description = listingDraft.description.trim();
     const minBidValue = parseFloat(listingDraft.minBid);
     const durationValue = parseInt(listingDraft.durationHours, 10);
-
+    
     if (!name || !description) {
       alert("Please provide a name and description.");
       return;
     }
-
+    
     if (Number.isNaN(minBidValue) || minBidValue <= 0) {
       alert("Minimum bid must be greater than 0.");
       return;
     }
-
+    
     if (Number.isNaN(durationValue) || durationValue <= 0) {
       alert("Duration should be at least one hour.");
       return;
     }
-
+    
     const id = `listing-${Date.now()}`;
     const endTime = hoursFromNow(durationValue);
     const seller = profile?.name ?? "You";
@@ -209,15 +212,28 @@ export default function AuctionPlatform() {
       highestBid: null,
       endsAt: endTime,
     };
-
+    
     setListings((prev) => [newListing, ...prev]);
     setPortfolio((prev) => [newPortfolio, ...prev]);
     setQuery("");
     closeListingModal();
   };
-
+  
+  const defaultListing : Listing = {
+    id: "",
+    name: "",
+    description: "",
+    minBid: 0,
+    currentBid: 0,
+    endTime: new Date,
+    seller: ""
+  }
+  const [bidOpen, setBidOpen] = useState(false); 
+  const [currentListing, setCurrentListing] = useState(defaultListing); 
+  const bidSenderRef = useRef<HTMLDivElement>(null);
   return (
     <div className="auction-shell">
+      <BidSender ref={bidSenderRef} open={bidOpen} setOpen={setBidOpen} listing={currentListing} />
       <header className="auction-header">
         <div className="auction-header__content">
           <div>
@@ -306,7 +322,10 @@ export default function AuctionPlatform() {
                       <dd>{formatTimeRemaining(listing.endTime)}</dd>
                     </div>
                   </dl>
-                  <button type="button" className="listing-action">
+                  <button type="button" className="listing-action" onClick={(e) => {
+                    setBidOpen(true);
+                    setCurrentListing(listing);
+                  }}>
                     Place a bid
                   </button>
                 </article>

@@ -560,3 +560,11 @@
   background-color: #ebe2ff;
   border-color: #bca7f5;
 }
+
+.close-bid-sender {
+  background-color: transparent;
+  border: none;
+  font-size: 25px;
+  cursor: pointer;
+  /* border-radius: 25%; */
+}
