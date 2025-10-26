@@ -11,7 +11,20 @@
     id           String   @id @default(auto()) @map("_id") @db.ObjectId
     name         String
     description  String
-    endTime      DateTime
+    endTime      Float
     minBid       Float
-    createdAt    DateTime @default(now())
+  }
+
+  model Bid {
+    id           String   @id @default(auto()) @map("_id") @db.ObjectId
+    name         String
+    bid          Float
+    endTime      Float
+    minBid       Float
+  }
+
+  model Cursor {
+    id           String   @id @default(auto()) @map("_id") @db.ObjectId
+    eventSeq     String
+    txDigest     String
   }
