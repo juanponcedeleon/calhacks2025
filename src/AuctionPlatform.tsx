@@ -212,10 +212,10 @@ export default function AuctionPlatform() {
                       <dt>Minimum bid</dt>
                       <dd>{formatSui(listing.minBid)}</dd>
                     </div>
-                    <div>
+                    {/* <div>
                       <dt>Current bid</dt>
                       <dd>{formatSui(listing.currentBid)}</dd>
-                    </div>
+                    </div> */}
                     <div>
                       <dt>Time remaining</dt>
                       <dd>{formatTimeRemaining(listing.endTime)}</dd>
@@ -223,6 +223,7 @@ export default function AuctionPlatform() {
                   </dl>
                   <button type="button" className="listing-action">
                     Place a bid
+                    {/*! TODO ADD FUNCTIONALITY */}
                   </button>
                 </article>
               ))}
