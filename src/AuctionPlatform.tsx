@@ -3,8 +3,10 @@ import "./AuctionPlatform.css";
 import { useAuth } from "@/MockAuth";
 import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import { BidSender } from "./BidSender";
+import { Listing } from "./components/listing/listing";
+import { ListingList } from "./components/listing/ListingList";
 
-export type Listing = {
+export type ListingType = {
   id: string;
   name: string;
   description: string;
@@ -44,7 +46,7 @@ function hoursFromNow(hours: number): Date {
   return next;
 }
 
-const initialListings: Listing[] = [
+const initialListings: ListingType[] = [
   {
     id: "orchid-01",
     name: "Orchid Glass Sculpture",
@@ -139,7 +141,7 @@ export default function AuctionPlatform() {
   
   const [tab, setTab] = useState<"browse" | "activity">("browse");
   const [query, setQuery] = useState("");
-  const [listings, setListings] = useState<Listing[]>(() => initialListings);
+  const [listings, setListings] = useState<ListingType[]>(() => initialListings);
   const [activity, setActivity] = useState<ActivityBid[]>(() => initialBids);
   const [portfolio, setPortfolio] = useState<PortfolioEntry[]>(() => initialPortfolio);
   const [isListingModalOpen, setListingModalOpen] = useState(false);
@@ -195,7 +197,7 @@ export default function AuctionPlatform() {
     const endTime = hoursFromNow(durationValue);
     const seller = profile?.name ?? "You";
 
-    const newListing: Listing = {
+    const newListing: ListingType = {
       id,
       name,
       description,
@@ -219,7 +221,7 @@ export default function AuctionPlatform() {
     closeListingModal();
   };
   
-  const defaultListing : Listing = {
+  const defaultListing : ListingType = {
     id: "",
     name: "",
     description: "",
@@ -295,38 +297,7 @@ export default function AuctionPlatform() {
         </section>
 
         {tab === "browse" ? (
-          <section aria-label="Browse listings">
-            <div className="listing-grid">
-              {filteredListings.map((listing) => (
-                <article key={listing.id} className="listing-card">
-                  <div className="listing-header">
-                    <h2>{listing.name}</h2>
-                    <span className="listing-seller">{listing.seller}</span>
-                  </div>
-                  <p className="listing-description">{listing.description}</p>
-                  <dl className="listing-meta">
-                    <div>
-                      <dt>Minimum bid</dt>
-                      <dd>{formatSui(listing.minBid)}</dd>
-                    </div>
-                    <div>
-                      <dt>Time remaining</dt>
-                      <dd>{formatTimeRemaining(listing.endTime)}</dd>
-                    </div>
-                  </dl>
-                  <button type="button" className="listing-action" onClick={(e) => {
-                    setBidOpen(true);
-                    setCurrentListing(listing);
-                  }}>
-                    Place a bid
-                  </button>
-                </article>
-              ))}
-            </div>
-            {filteredListings.length === 0 && (
-              <p className="empty-state">Nothing matched your search. Try another keyword.</p>
-            )}
-          </section>
+          <ListingList />
         ) : (
           <section className="activity-layout" aria-label="Your activity">
             <div className="activity-card">

@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { useCurrentAccount, useSuiClientQuery } from "@mysten/dapp-kit";
+import { type ListingType } from "../../AuctionPlatform"
 // import { SuiObjectDisplay } from "@/components/SuiObjectDisplay";
 // import { Button } from "@radix-ui/themes";
 // import {
@@ -26,12 +27,66 @@ import { useState } from "react";
  * Accepts an `escrow` object as returned from the API.
  */
 
-type ListingObject = {
-    value: string
-};
+type BidSenderProps = {
+  // any other props here
+  listing: ListingType;
+  setBidOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setCurrentListing: React.Dispatch<React.SetStateAction<ListingType>>;
+}
 
-export function Listing({ listing }: { listing: ListingObject }) {
-    return (<div />);
+function formatSui(value: number): string {
+  return `${value.toFixed(2)} SUI`;
+}
+
+function formatTimeRemaining(target: Date): string {
+  const diff = target.getTime() - Date.now();
+  if (diff <= 0) {
+    return "Closed";
+  }
+
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  if (hours >= 24) {
+    const days = Math.floor(hours / 24);
+    const remainingHours = hours % 24;
+    return `${days}d ${remainingHours}h`;
+  }
+
+  if (hours > 0) {
+    return `${hours}h ${remainingMinutes}m`;
+  }
+
+  return `${remainingMinutes}m`;
+}
+
+export function Listing({ listing, setBidOpen, setCurrentListing }: BidSenderProps) {
+    return (
+        <article key={listing.id} className="listing-card">
+            <div className="listing-header">
+                <h2>{listing.name}</h2>
+                <span className="listing-seller">{listing.seller}</span>
+                </div>
+                <p className="listing-description">{listing.description}</p>
+                <dl className="listing-meta">
+                <div>
+                    <dt>Minimum bid</dt>
+                    <dd>{formatSui(listing.minBid)}</dd>
+                </div>
+                <div>
+                    <dt>Time remaining</dt>
+                    <dd>{formatTimeRemaining(listing.endTime)}</dd>
+                </div>
+            </dl>
+            <button type="button" className="listing-action" onClick={(e) => {
+                setBidOpen(true);
+                setCurrentListing(listing);
+            }}>
+                Place a bid
+            </button>
+        </article>
+    );
 };
 
 // export function Escrow({ escrow }: { escrow: ApiEscrowObject }) {
