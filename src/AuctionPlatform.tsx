@@ -1,11 +1,7 @@
 ﻿import { useMemo, useState } from "react";
 import "./AuctionPlatform.css";
 import { useAuth } from "@/MockAuth";
-<<<<<<< HEAD
 import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
-=======
-import { ConnectButton } from "@mysten/dapp-kit";
->>>>>>> f41ea1ebaac87a7ba4e6d2e9c59ff8034ce2f6e7
 
 type Listing = {
   id: string;
@@ -235,11 +231,7 @@ export default function AuctionPlatform() {
               <span className="auction-user__label">Signed in</span>
               <span className="auction-user__name">{profile?.name ?? "Guest"}</span>
             </div>
-<<<<<<< HEAD
-            <ConnectButton className="auction-signout"/>
-=======
             <ConnectButton connectText="Connect wallet" className="auction-wallet" />
->>>>>>> f41ea1ebaac87a7ba4e6d2e9c59ff8034ce2f6e7
           </div>
         </div>
       </header>
