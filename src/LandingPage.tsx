@@ -4,56 +4,90 @@ import { useAuth } from "@/MockAuth";
 import "./LandingPage.css";
 
 const heroMetrics = [
-  { label: "Active listings", value: "48" },
-  { label: "Average reserve met", value: "92%" },
-  { label: "Verified sellers", value: "32" },
+  { label: "Encrypted bids confirmed", value: "18,420" },
+  { label: "Average finality (ms)", value: "480" },
+  { label: "Sui objects securing auctions", value: "6,300" },
 ];
 
 const highlights = [
   {
-    title: "Transparent minimums",
-    description: "Every auction publishes its reserve, so you know exactly where bidding starts before you commit.",
+    title: "Encrypted intent, on-chain truth",
+    description:
+      "Orchid Auctions leverages Sui Move smart contracts to keep bids confidential until settlement while preserving a verifiable audit trail.",
   },
   {
-    title: "Time you can trust",
-    description: "Live countdowns keep you synced across devices so there are no last-minute surprises or silent extensions.",
+    title: "Object-centric security",
+    description:
+      "Each auction, bid, and payout exists as a unique Sui object. Deterministic ownership eliminates tampering and removes opaque intermediaries.",
   },
   {
-    title: "Portfolio in one view",
-    description: "Monitor bids you have placed and the pieces you are selling without juggling separate dashboards.",
+    title: "Parallel execution, instant UX",
+    description:
+      "Sui's horizontal scaling commits transactions in parallel, so bid submissions and settlement confirmations remain sub-second.",
   },
 ];
 
 const workflow = [
   {
     step: "01",
-    title: "Sign in",
-    text: "Use Google to join instantly. We create a secure profile and wallet address for you on the spot.",
+    title: "Connect with Mysten Dapp Kit",
+    text: "Authenticate directly from your wallet—Orchid never holds private keys. Mysten's ConnectButton signs each transaction client-side.",
   },
   {
     step: "02",
-    title: "Browse curated drops",
-    text: "Filter by designer, medium, or closing time. Every listing comes with a short story and minimum bid.",
+    title: "Create sealed-bid auctions",
+    text: "Deploy an auction object on Sui with start and end windows, reserve price, and metadata. All bid data stays encrypted until reveal.",
   },
   {
     step: "03",
-    title: "Track your activity",
-    text: "Review offers you have made alongside listings you posted. Real-time status keeps you in the loop.",
+    title: "Reveal and settle trustlessly",
+    text: "When the timer expires, the contract decrypts bids, determines the winner, and transfers funds and ownership atomically.",
+  },
+];
+
+const whatItDoes = [
+  {
+    title: "Create auctions",
+    description:
+      "Each marketplace listing is deployed as a Sui object with immutable rules defining timing, reserve price, and metadata.",
+  },
+  {
+    title: "Place bids",
+    description:
+      "Users submit sealed bids that stay encrypted on chain until the reveal phase, keeping competitive intent private.",
+  },
+  {
+    title: "Finalize autonomously",
+    description:
+      "When the auction ends, the Move contract reveals bids, determines the winner, and executes payouts without custodians.",
+  },
+  {
+    title: "Connect wallets",
+    description:
+      "Powered by Mysten's ConnectButton, bidders authenticate securely with Sui-compatible wallets in a single click.",
+  },
+  {
+    title: "Query live state",
+    description:
+      "The client streams Sui RPC calls (getOwnedObjects, queryTransactionBlocks, and more) to keep the UI synced with on-chain events.",
   },
 ];
 
 const faqs = [
   {
-    question: "What currency do I bid with?",
-    answer: "Bids are denominated in SUI. We show the minimum and current bid so you can place informed offers.",
+    question: "How is confidentiality preserved?",
+    answer:
+      "Bids are written to Sui as encrypted objects. Only when the auction closes does the Move contract reveal values, ensuring fair competition.",
   },
   {
-    question: "Can I list my own items?",
-    answer: "Yes. Once you sign in, use the portfolio tab inside the app to publish new listings in minutes.",
+    question: "What happens after settlement?",
+    answer:
+      "Once the winner is declared, results become public chain data. Anyone can audit the winning amount, bidder, and payout transaction hashes.",
   },
   {
-    question: "Is this ready for production?",
-    answer: "This is a Cal Hacks showcase built to demonstrate a polished UX. Connect it to live contracts when you are ready.",
+    question: "Do I need custom infrastructure?",
+    answer:
+      "No. Orchid streams live state using Sui's RPC APIs (getOwnedObjects, queryTransactionBlocks, etc.), so connecting your wallet is enough.",
   },
 ];
 
@@ -135,8 +169,8 @@ export default function LandingPage() {
         <section className="landing-workflow" id="workflow">
           <header>
             <span className="section-tag">How it works</span>
-            <h2>A calm flow from sign-in to sale.</h2>
-            <p>Select a lot, place a bid, or create your own listing; everything sits inside an uncluttered dashboard.</p>
+            <h2>From wallet connect to settlement in three steps.</h2>
+            <p>Orchid abstracts the blockchain busy work so you can focus on the market, not the plumbing.</p>
           </header>
           <div className="workflow-grid">
             {workflow.map((item) => (
@@ -144,6 +178,12 @@ export default function LandingPage() {
                 <span className="workflow-step">{item.step}</span>
                 <h3>{item.title}</h3>
                 <p>{item.text}</p>
+              </article>
+            ))}
+            {whatItDoes.map((item) => (
+              <article key={item.title} className="workflow-card glow-border">
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
               </article>
             ))}
           </div>
