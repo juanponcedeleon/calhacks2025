@@ -1,0 +1,17 @@
+  generator client {
+    provider = "prisma-client-js"
+  }
+
+  datasource db {
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
+  }
+
+  model Listing {
+    id           String   @id @default(auto()) @map("_id") @db.ObjectId
+    name         String
+    description  String
+    endTime      DateTime
+    minBid       Float
+    createdAt    DateTime @default(now())
+  }
