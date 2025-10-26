@@ -77,6 +77,7 @@ app.get('/bids', async (req, res) => {
 
 	try {
 		const escrows = await prisma.bid.findMany({
+			// @ts-ignore
 			where: parseWhereStatement(req.query, acceptedQueries)!,
 			...parsePaginationForQuery(req.query),
 		});

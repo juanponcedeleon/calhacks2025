@@ -3,8 +3,7 @@ import "./AuctionPlatform.css";
 import { useAuth } from "@/MockAuth";
 import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import { BidSender } from "./BidSender";
-import { Listing } from "./components/listing/listing";
-import { ListingList } from "./components/listing/ListingList";
+import { type ListingQuery, ListingList } from "./components/listing/ListingList";
 
 export type ListingType = {
   id: string;
@@ -230,6 +229,16 @@ export default function AuctionPlatform() {
     endTime: new Date,
     seller: ""
   }
+
+  const defaultListingQuery : ListingQuery = {
+    listingId: "",
+    sender: "",
+    recipient: "",
+    cancelled: '',
+    swapped: '',
+    limit: ''
+  };
+
   const [bidOpen, setBidOpen] = useState(false); 
   const [currentListing, setCurrentListing] = useState(defaultListing); 
   const bidSenderRef = useRef<HTMLDivElement>(null);
@@ -297,7 +306,10 @@ export default function AuctionPlatform() {
         </section>
 
         {tab === "browse" ? (
-          <ListingList />
+          <ListingList
+            params={defaultListingQuery}
+            enableSearch={false}
+          />
         ) : (
           <section className="activity-layout" aria-label="Your activity">
             <div className="activity-card">

@@ -2,20 +2,28 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { CONSTANTS, QueryKey } from "@/constants";
-import Listing from "./listing";
-import { constructUrlSearchParams, getNextPageParam } from "@/utils/helpers";
+//import { CONSTANTS, QueryKey } from "@/constants";
+import { Listing } from "./listing";
+import { constructUrlSearchParams, getNextPageParam } from "../helpers.tsx";
 import { type ListingType } from "../../AuctionPlatform"
 import { useState } from "react";
 
-type ListingQuery = {
-  escrowId?: string;
+export type ListingQuery = {
+  listingId?: string;
   sender?: string;
   recipient?: string;
   cancelled?: string;
   swapped?: string;
   limit?: string;
 };
+
+type ListingListParams = {
+  // any other props here
+  params: ListingQuery;
+  enableSearch: boolean;
+  setBidOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setCurrentListing: React.Dispatch<React.SetStateAction<ListingType>>;
+}
 
 /**
  * A component that fetches and displays a list of escrows.
@@ -25,24 +33,23 @@ type ListingQuery = {
 export function ListingList({
   params,
   enableSearch,
-}: {
-  params: ListingQuery;
-  enableSearch?: boolean;
-}) {
-  const [escrowId, setEscrowId] = useState("");
+  setBidOpen,
+  setCurrentListing
+}: ListingListParams) {
+  const [listingId, setListingId] = useState("");
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
     useInfiniteQuery({
       initialPageParam: null,
-      queryKey: [QueryKey.Escrow, params, escrowId],
+      queryKey: [QueryKey.Escrow, params, listingId],
       queryFn: async ({ pageParam }) => {
         const data = await fetch(
           CONSTANTS.apiEndpoint +
-            "escrows" +
+            "listings" +
             constructUrlSearchParams({
               ...params,
               ...(pageParam ? { cursor: pageParam as string } : {}),
-              ...(escrowId ? { objectId: escrowId } : {}),
+              ...(listingId ? { objectId: listingId } : {}),
             }),
         );
         return data.json();
@@ -54,15 +61,15 @@ export function ListingList({
   return (
     <section aria-label="Browse listings">
         <div className="listing-grid">
-            {filteredListings.map((listing) => (
-            <Listing 
-                listing={listing}
-                setBidOpen={setBidOpen}
-                setCurrentListing={setCurrentListing}
-            />
+            {data?.map((listing: ListingType) => (
+              <Listing 
+                  listing={listing}
+                  setBidOpen={setBidOpen}
+                  setCurrentListing={setCurrentListing}
+              />
             ))}
         </div>
-        {filteredListings.length === 0 && (
+        {data?.length === 0 && (
             <p className="empty-state">Nothing matched your search. Try another keyword.</p>
         )}
     </section>
