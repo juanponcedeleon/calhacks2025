@@ -1,264 +1,339 @@
-import { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Clock, Gavel, Search, Plus, X } from "lucide-react";
+﻿import { useMemo, useState } from "react";
+import "./AuctionPlatform.css";
+import { useAuth } from "@/MockAuth";
 
-type Auction = {
+type Listing = {
   id: string;
-  title: string;
-  seller: string;
+  name: string;
+  description: string;
+  minBid: number;
   currentBid: number;
-  endAt: Date;
+  endTime: Date;
+  seller: string;
 };
 
-const sampleAuctions: Auction[] = [
-  { id: "1", title: "Genesis Sui NFT #001", seller: "0xa1b2…c3", currentBid: 1.25, endAt: hoursFromNow(4) },
-  { id: "2", title: "Rare Pixel Blade", seller: "0x9ee…88", currentBid: 3.7,  endAt: hoursFromNow(9) },
-  { id: "3", title: "Vintage Space Patch", seller: "0x11a…e5", currentBid: 0.42, endAt: hoursFromNow(2) },
-  { id: "4", title: "Signed Cal Hacks Tee", seller: "0xb77…f0", currentBid: 0.88, endAt: hoursFromNow(6) },
+type ActivityBid = {
+  id: string;
+  name: string;
+  bidAmount: number;
+  status: "leading" | "outbid" | "pending";
+  endsAt: Date;
+  minBid: number;
+};
+
+type PortfolioEntry = {
+  id: string;
+  name: string;
+  minBid: number;
+  highestBid: number | null;
+  endsAt: Date;
+};
+
+function hoursFromNow(hours: number): Date {
+  const next = new Date();
+  next.setHours(next.getHours() + hours);
+  return next;
+}
+
+const listings: Listing[] = [
+  {
+    id: "orchid-01",
+    name: "Orchid Glass Sculpture",
+    description: "Hand blown lavender glass with etched chrome accents.",
+    minBid: 1.25,
+    currentBid: 1.4,
+    endTime: hoursFromNow(4),
+    seller: "Atelier Morrow",
+  },
+  {
+    id: "silk-02",
+    name: "Lilac Silk Poster",
+    description: "Limited run screen print on archival lavender silk.",
+    minBid: 0.9,
+    currentBid: 1.05,
+    endTime: hoursFromNow(7),
+    seller: "Studio Ember",
+  },
+  {
+    id: "vinyl-03",
+    name: "Midnight Vinyl Set",
+    description: "Four track ambient vinyl release signed by the artist.",
+    minBid: 0.7,
+    currentBid: 0.82,
+    endTime: hoursFromNow(2),
+    seller: "Nova Rooms",
+  },
+  {
+    id: "chair-04",
+    name: "Contour Lounge Chair",
+    description: "Ash frame with plum boucle upholstery and matte hardware.",
+    minBid: 2.5,
+    currentBid: 2.85,
+    endTime: hoursFromNow(12),
+    seller: "Form Index",
+  },
 ];
 
-export default function AuctionPlatform() {
-  const [tab, setTab] = useState<"browse" | "yours">("browse");
-  const [query, setQuery] = useState("");
-  const [bidOpen, setBidOpen] = useState<null | Auction>(null);
-  const [myOpen, setMyOpen] = useState(false);
+const activityBids: ActivityBid[] = [
+  {
+    id: "orchid-01",
+    name: "Orchid Glass Sculpture",
+    bidAmount: 1.4,
+    status: "leading",
+    endsAt: listings[0].endTime,
+    minBid: listings[0].minBid,
+  },
+  {
+    id: "vinyl-03",
+    name: "Midnight Vinyl Set",
+    bidAmount: 0.8,
+    status: "outbid",
+    endsAt: listings[2].endTime,
+    minBid: listings[2].minBid,
+  },
+];
 
-  const items = useMemo(() => {
-    const list = sampleAuctions; // hook up to real data later
-    if (!query.trim()) return list;
-    return list.filter(a =>
-      a.title.toLowerCase().includes(query.toLowerCase()) ||
-      a.seller.toLowerCase().includes(query.toLowerCase())
-    );
+const portfolioEntries: PortfolioEntry[] = [
+  {
+    id: "lamp-11",
+    name: "Halo Table Lamp",
+    minBid: 1.1,
+    highestBid: 1.24,
+    endsAt: hoursFromNow(6),
+  },
+  {
+    id: "planter-12",
+    name: "Carved Stone Planter",
+    minBid: 0.6,
+    highestBid: null,
+    endsAt: hoursFromNow(18),
+  },
+];
+
+const statusCopy: Record<ActivityBid["status"], string> = {
+  leading: "Leading bid",
+  outbid: "Outbid",
+  pending: "Pending",
+};
+
+export default function AuctionPlatform() {
+  const { profile, logout } = useAuth();
+  const [tab, setTab] = useState<"browse" | "activity">("browse");
+  const [query, setQuery] = useState("");
+
+  const filteredListings = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) {
+      return listings;
+    }
+    return listings.filter((listing) => {
+      return (
+        listing.name.toLowerCase().includes(normalized) ||
+        listing.description.toLowerCase().includes(normalized) ||
+        listing.seller.toLowerCase().includes(normalized)
+      );
+    });
   }, [query]);
 
   return (
-    <main className="min-h-screen p-5 md:p-8">
-      <div className="mx-auto w-full max-w-6xl">
-        {/* Header */}
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <h1 className="flex items-center gap-3">
-            <span className="inline-flex rounded-xl bg-white/10 p-2"><Gavel className="h-6 w-6 text-purple-400" /></span>
-            Auction Platform
-          </h1>
-          <div className="flex items-center gap-3">
-            <div className="glass flex items-center gap-2 rounded-xl px-3 py-2">
-              <Search className="h-4 w-4 text-white/60" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search items or sellers…"
-                className="bg-transparent outline-none placeholder:text-white/50 text-sm"
-                aria-label="Search auctions"
-              />
+    <div className="auction-shell">
+      <header className="auction-header">
+        <div className="auction-header__content">
+          <div>
+            <h1>Orchid Auctions</h1>
+            <p>Minimal auctions for people who love deliberate design.</p>
+          </div>
+          <div className="auction-user">
+            <div className="auction-user__meta">
+              <span className="auction-user__label">Signed in</span>
+              <span className="auction-user__name">
+                {profile?.name ?? "Guest"}
+              </span>
             </div>
-            <button className="btn-ghost" onClick={() => setMyOpen(true)}>
-              <Plus className="h-4 w-4" /> New Listing
+            <button
+              className="auction-signout"
+              onClick={() => {
+                logout();
+                window.location.replace("/");
+              }}
+            >
+              Sign out
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Tabs */}
-        <div className="glass mb-6 inline-flex rounded-xl p-1">
-          <TabButton active={tab === "browse"} onClick={() => setTab("browse")}>Browse</TabButton>
-          <TabButton active={tab === "yours"} onClick={() => setTab("yours")}>Your Auctions</TabButton>
-        </div>
-
-        {/* Content */}
-        <AnimatePresence mode="wait">
-          {tab === "browse" ? (
-            <motion.section
-              key="browse"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
+      <main className="auction-container">
+        <section className="auction-toolbar">
+          <div className="auction-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              className={tab === "browse" ? "is-active" : ""}
+              onClick={() => setTab("browse")}
+              aria-selected={tab === "browse"}
             >
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {items.map((a, i) => (
-                  <motion.div
-                    key={a.id}
-                    className="card"
-                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ delay: i * 0.04 }}
-                  >
-                    <h3 className="text-xl font-semibold">{a.title}</h3>
-                    <p className="mt-1 text-sm text-white/70">Seller: {a.seller}</p>
-
-                    <div className="mt-4 flex items-center justify-between">
-                      <div>
-                        <div className="text-white/70 text-xs">Current Bid</div>
-                        <div className="text-lg font-bold">{a.currentBid.toFixed(2)} SUI</div>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-white/80">
-                        <Clock className="h-4 w-4" />
-                        <Countdown endAt={a.endAt} />
-                      </div>
-                    </div>
-
-                    <div className="mt-5 flex gap-3">
-                      <button className="btn-primary" onClick={() => setBidOpen(a)}>Place Bid</button>
-                      <button className="btn-ghost">View</button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.section>
-          ) : (
-            <motion.section
-              key="yours"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
+              Browse
+            </button>
+            <button
+              type="button"
+              role="tab"
+              className={tab === "activity" ? "is-active" : ""}
+              onClick={() => setTab("activity")}
+              aria-selected={tab === "activity"}
             >
-              <div className="card">
-                <h2 className="mb-1">Your Auctions</h2>
-                <p className="text-white/70">When you list items, they’ll appear here with quick actions to edit, cancel, or accept a winning bid.</p>
-              </div>
-            </motion.section>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Bid Modal */}
-      <BidModal open={!!bidOpen} auction={bidOpen} onClose={() => setBidOpen(null)} />
-
-      {/* New Listing Modal (skeleton) */}
-      <SimpleModal open={myOpen} onClose={() => setMyOpen(false)} title="Create New Listing">
-        <p className="text-white/80">
-          Hook up your listing form here (title, image, starting bid, duration, etc.).  
-          This modal is accessible and already styled.
-        </p>
-      </SimpleModal>
-    </main>
-  );
-}
-
-function TabButton({
-  active, onClick, children,
-}: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      onClick={onClick}
-      className={[
-        "relative rounded-lg px-4 py-2 text-sm font-semibold transition",
-        active ? "bg-white/15" : "hover:bg-white/10 text-white/80"
-      ].join(" ")}
-    >
-      {children}
-      {active && <span className="absolute inset-x-2 -bottom-[3px] h-[3px] rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-500" />}
-    </button>
-  );
-}
-
-/* --------- Bid Modal --------- */
-function BidModal({
-  open, auction, onClose,
-}: { open: boolean; auction: Auction | null; onClose: () => void }) {
-  const [amount, setAmount] = useState<string>("");
-  const minBid = auction ? Math.max(auction.currentBid + 0.01, auction.currentBid * 1.01) : 0;
-
-  return (
-    <SimpleModal open={open} onClose={onClose} title={`Place Bid${auction ? ` — ${auction.title}` : ""}`}>
-      {auction ? (
-        <form
-          className="space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const v = parseFloat(amount);
-            if (isNaN(v) || v < minBid) {
-              alert(`Enter a valid amount ≥ ${minBid.toFixed(2)} SUI`);
-              return;
-            }
-            // Integrate wallet + on-chain call here
-            alert(`Bid of ${v.toFixed(2)} SUI placed!`);
-            onClose();
-          }}
-        >
-          <div className="text-white/80 text-sm">
-            Current bid: <strong>{auction.currentBid.toFixed(2)} SUI</strong>
+              Your Activity
+            </button>
           </div>
-          <label className="block text-sm text-white/80">
-            Your bid (SUI)
+
+          <label className="auction-search">
+            <span className="auction-search__label">Search</span>
             <input
-              inputMode="decimal"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder={minBid.toFixed(2)}
-              className="mt-1 w-full rounded-xl bg-white/5 px-3 py-2 outline-none border border-white/10 focus:border-purple-400"
-              aria-label="Bid amount in SUI"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search listings or sellers"
+              aria-label="Search listings"
             />
           </label>
-          <div className="flex justify-end gap-2">
-            <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn-primary">Confirm Bid</button>
-          </div>
-        </form>
-      ) : (
-        <p className="text-white/70">Select an auction to bid.</p>
-      )}
-    </SimpleModal>
-  );
-}
+        </section>
 
-/* --------- Generic Accessible Modal --------- */
-function SimpleModal({
-  open, onClose, title, children,
-}: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
-  return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 grid place-items-center px-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <div
-            className="absolute inset-0 bg-black/70"
-            onClick={onClose}
-            aria-hidden="true"
-          />
-          <motion.div
-            className="glass relative w-full max-w-lg rounded-2xl p-6"
-            initial={{ y: 20, opacity: 0, scale: 0.98 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: 10, opacity: 0, scale: 0.98 }}
-          >
-            <div className="mb-4 flex items-start justify-between">
-              <h3 className="text-xl font-bold">{title}</h3>
-              <button aria-label="Close" className="rounded-lg p-1 hover:bg-white/10" onClick={onClose}>
-                <X className="h-5 w-5" />
-              </button>
+        {tab === "browse" ? (
+          <section aria-label="Browse listings">
+            <div className="listing-grid">
+              {filteredListings.map((listing) => (
+                <article key={listing.id} className="listing-card glow-border">
+                  <div className="listing-header">
+                    <h2>{listing.name}</h2>
+                    <span className="listing-seller">{listing.seller}</span>
+                  </div>
+                  <p className="listing-description">{listing.description}</p>
+                  <dl className="listing-meta">
+                    <div>
+                      <dt>Minimum bid</dt>
+                      <dd>{formatSui(listing.minBid)}</dd>
+                    </div>
+                    <div>
+                      <dt>Current bid</dt>
+                      <dd>{formatSui(listing.currentBid)}</dd>
+                    </div>
+                    <div>
+                      <dt>Time remaining</dt>
+                      <dd>{formatTimeRemaining(listing.endTime)}</dd>
+                    </div>
+                  </dl>
+                  <button type="button" className="listing-action">
+                    Place a bid
+                  </button>
+                </article>
+              ))}
             </div>
-            {children}
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            {filteredListings.length === 0 && (
+              <p className="empty-state">
+                Nothing matched your search. Try another keyword.
+              </p>
+            )}
+          </section>
+        ) : (
+          <section className="activity-layout" aria-label="Your activity">
+            <div className="activity-card glow-border">
+              <header>
+                <h2>Things you have bid on</h2>
+                <p>Track how your offers are performing across live auctions.</p>
+              </header>
+              {activityBids.length > 0 ? (
+                <ul className="activity-list">
+                  {activityBids.map((bid) => (
+                    <li key={bid.id}>
+                      <div className="activity-primary">
+                        <span className="activity-title">{bid.name}</span>
+                        <span className={`activity-status status-${bid.status}`}>
+                          {statusCopy[bid.status]}
+                        </span>
+                      </div>
+                      <div className="activity-secondary">
+                        <span>
+                          Your bid <strong>{formatSui(bid.bidAmount)}</strong>
+                        </span>
+                        <span>Minimum {formatSui(bid.minBid)}</span>
+                        <span>Ends in {formatTimeRemaining(bid.endsAt)}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="empty-state">You have not placed any bids yet.</p>
+              )}
+            </div>
+
+            <div className="activity-card glow-border">
+              <header>
+                <h2>Things you are selling</h2>
+                <p>Review listings that are currently live in the marketplace.</p>
+              </header>
+              {portfolioEntries.length > 0 ? (
+                <ul className="activity-list">
+                  {portfolioEntries.map((entry) => (
+                    <li key={entry.id}>
+                      <div className="activity-primary">
+                        <span className="activity-title">{entry.name}</span>
+                        <span className="activity-status status-muted">
+                          {formatTimeRemaining(entry.endsAt)}
+                        </span>
+                      </div>
+                      <div className="activity-secondary">
+                        <span>
+                          Minimum <strong>{formatSui(entry.minBid)}</strong>
+                        </span>
+                        <span>
+                          Highest bid {entry.highestBid ? formatSui(entry.highestBid) : "No bids yet"}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="empty-state">
+                  You have not listed anything for auction yet.
+                </p>
+              )}
+            </div>
+          </section>
+        )}
+      </main>
+
+      <footer className="auction-footer">
+        <div className="auction-footer__content">
+          <span>Copyright {new Date().getFullYear()} Orchid Auctions</span>
+          <span>Thoughtful auctions built for Cal Hacks 2025</span>
+        </div>
+      </footer>
+    </div>
   );
 }
 
-/* --------- Helpers --------- */
-function Countdown({ endAt }: { endAt: Date }) {
-  const [tick, setTick] = useState(0);
-  // simple re-render each second
-  React.useEffect(() => {
-    const t = setInterval(() => setTick((x) => x + 1), 1000);
-    return () => clearInterval(t);
-  }, []);
-  const diff = Math.max(0, endAt.getTime() - Date.now());
-  const s = Math.floor(diff / 1000);
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const ss = s % 60;
-  return <span aria-live="polite">{h}h {m}m {ss}s</span>;
+function formatSui(value: number): string {
+  return `${value.toFixed(2)} SUI`;
 }
 
-function hoursFromNow(h: number) {
-  const d = new Date();
-  d.setHours(d.getHours() + h);
-  return d;
+function formatTimeRemaining(target: Date): string {
+  const diff = target.getTime() - Date.now();
+  if (diff <= 0) {
+    return "Closed";
+  }
+
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  if (hours >= 24) {
+    const days = Math.floor(hours / 24);
+    const remainingHours = hours % 24;
+    return `${days}d ${remainingHours}h`;
+  }
+
+  if (hours > 0) {
+    return `${hours}h ${remainingMinutes}m`;
+  }
+
+  return `${remainingMinutes}m`;
 }

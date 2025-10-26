@@ -1,0 +1,115 @@
+﻿.login-shell {
+  min-height: 100vh;
+  background-color: #f5f1ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+}
+
+.login-panel {
+  width: min(420px, 100%);
+  background-color: #ffffff;
+  border: 1px solid #ded2ff;
+  border-radius: 24px;
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  box-shadow: 0 18px 32px rgba(42, 29, 73, 0.12);
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.login-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background-color: #2d1f46;
+  color: #f5f1ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.login-brand h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+  color: #2d1f46;
+}
+
+.login-brand p {
+  margin: 0.35rem 0 0;
+  color: #5c4a82;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.login-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border: 1px solid #cbb9ff;
+  background-color: #f5f1ff;
+  color: #2d1f46;
+  border-radius: 999px;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+}
+
+.login-google:hover {
+  background-color: #ebe2ff;
+  border-color: #bca7f5;
+}
+
+.login-google:active {
+  transform: scale(0.98);
+}
+
+.google-icon {
+  display: grid;
+  grid-template-columns: repeat(2, 8px);
+  grid-template-rows: repeat(2, 8px);
+  gap: 4px;
+}
+
+.google-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: block;
+}
+
+.dot-blue {
+  background-color: #4285f4;
+}
+
+.dot-red {
+  background-color: #ea4335;
+}
+
+.dot-yellow {
+  background-color: #fbbc05;
+}
+
+.dot-green {
+  background-color: #34a853;
+}
+
+.login-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6a5a9a;
+  line-height: 1.4;
+  text-align: center;
+}
