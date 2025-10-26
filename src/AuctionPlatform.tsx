@@ -114,7 +114,7 @@ const initialPortfolio: PortfolioEntry[] = [
 ];
 
 const statusCopy: Record<ActivityBid["status"], string> = {
-  leading: "Leading bid",
+  leading: "Live",
   outbid: "Outbid",
   pending: "Pending",
 };
