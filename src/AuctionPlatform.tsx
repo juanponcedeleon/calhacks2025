@@ -1,9 +1,11 @@
-﻿import { useMemo, useRef, useState } from "react";
-import "./AuctionPlatform.css";
+﻿import "./AuctionPlatform.css";
 import { useAuth } from "@/MockAuth";
 import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import { BidSender } from "./BidSender";
 import { type ListingQuery, ListingList } from "./components/listing/ListingList";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
+import "./AuctionPlatform.css";
+import Countdown from "react-countdown";
 
 export type ListingType = {
   id: string;
@@ -12,7 +14,6 @@ export type ListingType = {
   minBid: number;
   currentBid: number;
   endTime: Date;
-  seller: string;
 };
 
 type ActivityBid = {
@@ -53,7 +54,6 @@ const initialListings: ListingType[] = [
     minBid: 1.25,
     currentBid: 1.4,
     endTime: hoursFromNow(4),
-    seller: "Atelier Morrow",
   },
   {
     id: "silk-02",
@@ -62,7 +62,6 @@ const initialListings: ListingType[] = [
     minBid: 0.9,
     currentBid: 1.05,
     endTime: hoursFromNow(7),
-    seller: "Studio Ember",
   },
   {
     id: "vinyl-03",
@@ -71,7 +70,6 @@ const initialListings: ListingType[] = [
     minBid: 0.7,
     currentBid: 0.82,
     endTime: hoursFromNow(2),
-    seller: "Nova Rooms",
   },
   {
     id: "chair-04",
@@ -80,7 +78,6 @@ const initialListings: ListingType[] = [
     minBid: 2.5,
     currentBid: 2.85,
     endTime: hoursFromNow(12),
-    seller: "Form Index",
   },
 ];
 
@@ -135,7 +132,13 @@ function freshListingDraft(): ListingDraft {
   };
 }
 
+
+
 export default function AuctionPlatform() {
+  // useEffect(async () => {
+  //   initialListings = axios.get("/api/get-listing/")
+  // }, [])
+
   const { profile } = useAuth();
   
   const [tab, setTab] = useState<"browse" | "activity">("browse");
@@ -165,8 +168,7 @@ export default function AuctionPlatform() {
     return listings.filter((listing) => {
       return (
         listing.name.toLowerCase().includes(normalized) ||
-        listing.description.toLowerCase().includes(normalized) ||
-        listing.seller.toLowerCase().includes(normalized)
+        listing.description.toLowerCase().includes(normalized)
       );
     });
   }, [listings, query]);
@@ -203,7 +205,6 @@ export default function AuctionPlatform() {
       minBid: minBidValue,
       currentBid: minBidValue,
       endTime,
-      seller,
     };
 
     const newPortfolio: PortfolioEntry = {
@@ -227,7 +228,6 @@ export default function AuctionPlatform() {
     minBid: 0,
     currentBid: 0,
     endTime: new Date,
-    seller: ""
   }
 
   const defaultListingQuery : ListingQuery = {
@@ -242,6 +242,7 @@ export default function AuctionPlatform() {
   const [bidOpen, setBidOpen] = useState(false); 
   const [currentListing, setCurrentListing] = useState(defaultListing); 
   const bidSenderRef = useRef<HTMLDivElement>(null);
+
   return (
     <div className="auction-shell">
       <BidSender ref={bidSenderRef} open={bidOpen} setOpen={setBidOpen} listing={currentListing} />
@@ -332,7 +333,7 @@ export default function AuctionPlatform() {
                           Your bid <strong>{formatSui(bid.bidAmount)}</strong>
                         </span>
                         <span>Minimum {formatSui(bid.minBid)}</span>
-                        <span>Ends in {formatTimeRemaining(bid.endsAt)}</span>
+                        <span>Ends in {<Countdown daysInHours={true} date={bid.endsAt} />}</span>
                       </div>
                     </li>
                   ))}
@@ -354,7 +355,7 @@ export default function AuctionPlatform() {
                       <div className="activity-primary">
                         <span className="activity-title">{entry.name}</span>
                         <span className="activity-status status-muted">
-                          {formatTimeRemaining(entry.endsAt)}
+                          {<Countdown daysInHours={true} date={entry.endsAt} />}
                         </span>
                       </div>
                       <div className="activity-secondary">
@@ -466,27 +467,4 @@ export default function AuctionPlatform() {
 
 function formatSui(value: number): string {
   return `${value.toFixed(2)} SUI`;
-}
-
-function formatTimeRemaining(target: Date): string {
-  const diff = target.getTime() - Date.now();
-  if (diff <= 0) {
-    return "Closed";
-  }
-
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-
-  if (hours >= 24) {
-    const days = Math.floor(hours / 24);
-    const remainingHours = hours % 24;
-    return `${days}d ${remainingHours}h`;
-  }
-
-  if (hours > 0) {
-    return `${hours}h ${remainingMinutes}m`;
-  }
-
-  return `${remainingMinutes}m`;
 }
