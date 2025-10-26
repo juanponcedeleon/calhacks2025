@@ -1,4 +1,4 @@
-﻿import { useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import "./AuctionPlatform.css";
 import { useAuth } from "@/MockAuth";
 import { ConnectButton } from "@mysten/dapp-kit";
@@ -137,6 +137,10 @@ function freshListingDraft(): ListingDraft {
 
 
 export default function AuctionPlatform() {
+  // useEffect(() => {
+  //   initialListings =
+  // }, [])
+
   const { profile } = useAuth();
   
   const [tab, setTab] = useState<"browse" | "activity">("browse");
