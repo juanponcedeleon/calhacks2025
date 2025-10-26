@@ -1,6 +1,7 @@
 ﻿import { useMemo, useState } from "react";
 import "./AuctionPlatform.css";
 import { useAuth } from "@/MockAuth";
+import { useCurrentAccount, ConnectButton } from "@mysten/dapp-kit";
 
 type Listing = {
   id: string;
@@ -120,6 +121,7 @@ export default function AuctionPlatform() {
   const { profile, logout } = useAuth();
   const [tab, setTab] = useState<"browse" | "activity">("browse");
   const [query, setQuery] = useState("");
+  const account = useCurrentAccount();
 
   const filteredListings = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -150,15 +152,7 @@ export default function AuctionPlatform() {
                 {profile?.name ?? "Guest"}
               </span>
             </div>
-            <button
-              className="auction-signout"
-              onClick={() => {
-                logout();
-                window.location.replace("/");
-              }}
-            >
-              Sign out
-            </button>
+            <ConnectButton />
           </div>
         </div>
       </header>
