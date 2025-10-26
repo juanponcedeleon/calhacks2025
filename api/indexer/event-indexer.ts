@@ -29,7 +29,7 @@ type EventTracker = {
 
 const EVENTS_TO_TRACK: EventTracker[] = [
 	{
-		type: `${CONFIG.SWAP_CONTRACT.packageId}::listing`,
+		type: `${CONFIG.SWAP_CONTRACT.packageId}::listing::ListingCreated`,
 		filter: {
 			MoveEventModule: {
 				module: 'listing',
@@ -39,7 +39,7 @@ const EVENTS_TO_TRACK: EventTracker[] = [
 		callback: handleListingObjects,
 	},
 	{
-		type: `${CONFIG.SWAP_CONTRACT.packageId}::bid`,
+		type: `${CONFIG.SWAP_CONTRACT.packageId}::bid::BidCreated`,
 		filter: {
 			MoveEventModule: {
 				module: 'bid',

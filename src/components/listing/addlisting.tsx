@@ -4,6 +4,7 @@ import { useCurrentAccount } from "@mysten/dapp-kit";
 import { CONSTANTS } from "../../constants";
 import { useTransactionExecution } from "../useTransaction";
 import { Transaction } from "@mysten/sui/transactions";
+import { useSignAndExecuteTransaction,  } from "@mysten/dapp-kit";
 
 function getRandomU64() {
   // Generate four 16-bit random numbers and combine them.
@@ -24,7 +25,9 @@ function getRandomU64() {
 
 export function useCreateListingMutation() {
   const currentAccount = useCurrentAccount();
-  const executeTransaction = useTransactionExecution();
+  const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction();
+//   const executeTransaction = useTransactionExecution();
+  const [digest, setDigest] = useState('');
 
   return (async ({
       listing,
@@ -46,7 +49,23 @@ export function useCreateListingMutation() {
         ]
       });
 
-      return executeTransaction(txb);
+      console.log('please.pleaselase;ajlahfao/k');
+      console.log(txb);
+
+      signAndExecuteTransaction({transaction: txb, chain: 'sui:testnet'},
+            {
+                onSuccess: (result) => {
+                    console.log('executed transaction', result);
+                    setDigest(result.digest);
+                },
+                onSettled: (result) => {
+                    console.log('settled', result);
+                },
+                onError: (error) => {
+                    console.log('error', error);
+                }
+            },
+        );
     })
 }
 
@@ -92,8 +111,43 @@ function hoursFromNow(hours: number): Date {
 export function AddListing({ closeListingModal, setListings, setPortfolio, setQuery }: AddListingProps) {
     const account = useCurrentAccount();
     const [listingDraft, setListingDraft] = useState<ListingDraft>(freshListingDraft);
+    const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction();
 
-    const createListMutation = useCreateListingMutation();
+    const testCreation = () => {
+        const name = listingDraft.name.trim();
+        const description = listingDraft.description.trim();
+        const minBidValue = parseFloat(listingDraft.minBid);
+        const durationValue = parseInt(listingDraft.durationHours, 10);
+
+        const txb = new Transaction();
+        txb.moveCall({
+            target: `${CONSTANTS.listingContract.packageId}::listing::create`,
+            arguments: [
+                txb.pure.u64(getRandomU64()),
+                txb.pure.u64(Math.round(minBidValue * 1000000000)),
+                txb.pure.u64(durationValue),
+                txb.pure.string(name),
+                txb.pure.string(description)
+            ]
+        });
+
+        console.log('please.pleaselase;ajlahfao/k');
+        console.log(txb);
+
+        signAndExecuteTransaction({transaction: txb, chain: 'sui:testnet'},
+                {
+                    onSuccess: (result) => {
+                        console.log('executed transaction', result);
+                    },
+                    onSettled: (result) => {
+                        console.log('settled', result);
+                    },
+                    onError: (error) => {
+                        console.log('error', error);
+                    }
+                },
+            );
+    }
 
     const handleCreateListing = () => {
         const name = listingDraft.name.trim();
@@ -135,19 +189,42 @@ export function AddListing({ closeListingModal, setListings, setPortfolio, setQu
             highestBid: null,
             endsAt: endTime,
         };
-        
-        createListMutation({
-            listing: newListing
-        }).then(() => {
-            setListings((prev) => [newListing, ...prev]);
-            setPortfolio((prev) => [newPortfolio, ...prev]);
 
-            setQuery("");
-            setListingDraft(freshListingDraft());
-            closeListingModal();
-        }).catch(err => {
-            alert(err);
+        const txb = new Transaction();
+        txb.moveCall({
+            target: `${CONSTANTS.listingContract.packageId}::listing::create`,
+            arguments: [
+                txb.pure.u64(12981239128733),
+                txb.pure.u64(Math.round(0.01 * 1000000000)),
+                txb.pure.u64(234982349871234),
+                txb.pure.string('ball'),
+                txb.pure.string('sack')
+            ]
         });
+
+        console.log('please.pleaselase;ajlahfao/k');
+        console.log(txb);
+
+        signAndExecuteTransaction({transaction: txb, chain: 'sui:testnet'},
+                {
+                    onSuccess: (result) => {
+                        console.log('executed transaction', result);
+                    },
+                    onSettled: (result) => {
+                        console.log('settled', result);
+                    },
+                    onError: (error) => {
+                        console.log('error', error);
+                    }
+                },
+            );
+
+        setListings((prev) => [newListing, ...prev]);
+        setPortfolio((prev) => [newPortfolio, ...prev]);
+
+        setQuery("");
+        setListingDraft(freshListingDraft());
+        closeListingModal();
     };
 
     return (
@@ -220,7 +297,9 @@ export function AddListing({ closeListingModal, setListings, setPortfolio, setQu
               <button type="button" className="modal-secondary" onClick={closeListingModal}>
                 Cancel
               </button>
-              <button type="button" className="modal-primary" onClick={handleCreateListing}>
+              <button type="button" className="modal-primary" onClick={() => {
+                testCreation();
+              }}>
                 Add listing
               </button>
             </footer>
